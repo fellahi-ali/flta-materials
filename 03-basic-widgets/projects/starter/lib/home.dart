@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'card1.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -18,8 +19,7 @@ class _HomeState extends State<Home> {
   }
 
   final List<Widget> _pages = <Widget>[
-    // TODO: Replace with Card1
-    Container(color: Colors.green),
+    const Card1(),
     Container(color: Colors.deepOrangeAccent),
     Container(color: Colors.blueAccent),
   ];
