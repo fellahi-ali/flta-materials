@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'card3.dart';
 import 'card1.dart';
 import 'card2.dart';
 
@@ -22,7 +23,7 @@ class _HomeState extends State<Home> {
   final List<Widget> _pages = <Widget>[
     const Card1(),
     const Card2(),
-    Container(color: Colors.blueAccent),
+    const Card3(),
   ];
 
   @override
