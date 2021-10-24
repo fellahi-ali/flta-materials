@@ -8,19 +8,19 @@ class FavoriteButton extends StatefulWidget {
 }
 
 class _FavoriteState extends State<FavoriteButton> {
-  var _favorite = false;
+  var _isFavorite = false;
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(_favorite ? Icons.favorite_rounded : Icons.favorite_border),
+      icon: Icon(_isFavorite ? Icons.favorite : Icons.favorite_border),
       iconSize: 30,
-      color: _favorite ? Colors.red[400] : Colors.grey[400],
+      color: Colors.red[400],
       onPressed: () {
         const snackBar = SnackBar(content: Text('Favorite changed'));
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         setState(() {
-          _favorite = !_favorite;
+          _isFavorite = !_isFavorite;
         });
       },
     );

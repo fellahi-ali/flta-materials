@@ -4,6 +4,7 @@ import 'fooderlich_theme.dart';
 
 class Card3 extends StatelessWidget {
   const Card3({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -43,6 +44,10 @@ class Card3 extends StatelessWidget {
                     style: FooderlichTheme.darkTextTheme.headline2,
                   ),
                   const SizedBox(height: 30),
+                  const Text(
+                    'بالصحة و الهناء',
+                    style: TextStyle(color: Colors.white),
+                  )
                 ],
               ),
             ),

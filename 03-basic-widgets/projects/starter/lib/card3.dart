@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
-import 'package:fooderlich/fooderlich_theme.dart';
+import 'flutter_svg.dart';
+import 'fooderlich_theme.dart';
 
 class Card3 extends StatelessWidget {
   const Card3({Key? key}) : super(key: key);
@@ -22,6 +23,7 @@ class Card3 extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         child: Stack(children: [
+          Center(child: flutterLogo()),
           Container(
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.5),
@@ -42,16 +44,7 @@ class Card3 extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: categories.map((category) {
-                    return Chip(
-                      label: Text(category, style: theme.bodyText1),
-                      backgroundColor: Colors.black.withOpacity(0.7),
-                      onDeleted: () {
-                        final snackBar = SnackBar(
-                          content: Text('Delete ${category}'),
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                      },
-                    );
+                    return _buildChip(category, theme, context);
                   }).toList(),
                 )
               ],
@@ -59,6 +52,19 @@ class Card3 extends StatelessWidget {
           ),
         ]),
       ),
+    );
+  }
+
+  Chip _buildChip(String category, TextTheme theme, BuildContext context) {
+    return Chip(
+      label: Text(category, style: theme.bodyText1),
+      backgroundColor: Colors.black.withOpacity(0.7),
+      onDeleted: () {
+        final snackBar = SnackBar(
+          content: Text('Delete ${category}'),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      },
     );
   }
 }
