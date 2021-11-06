@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:fooderlich/components/recipes_grid_view.dart';
+import '../components/recipes_grid_view.dart';
 import '../api/mock_fooderlich_service.dart';
-import '../components/components.dart';
 import '../models/models.dart';
 
 typedef Recipes = List<SimpleRecipe>;

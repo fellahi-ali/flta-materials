@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:device_preview/device_preview.dart';
+import 'state/grocery_items.dart';
+import 'package:provider/provider.dart';
 import 'fooderlich_theme.dart';
 import 'home.dart';
+import 'state/tab_manager.dart';
 
 void main() {
   runApp(
@@ -18,14 +21,19 @@ class Fooderlich extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      useInheritedMediaQuery: true,
-      theme: FooderlichTheme.light(),
-      darkTheme: FooderlichTheme.dark(),
-      //themeMode: ThemeMode.dark,
-      title: 'Fooderlich',
-      // TODO 8: Replace this with MultiProvider
-      home: const Home(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => HomeTabsState()),
+        ChangeNotifierProvider(create: (context) => GroceryItemsState())
+      ],
+      child: MaterialApp(
+        useInheritedMediaQuery: true,
+        theme: FooderlichTheme.light(),
+        darkTheme: FooderlichTheme.dark(),
+        themeMode: ThemeMode.dark,
+        title: 'Fooderlich',
+        home: const Home(),
+      ),
     );
   }
 }

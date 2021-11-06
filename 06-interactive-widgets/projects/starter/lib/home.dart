@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'screens/explore_screen.dart';
-import 'screens/recipes_screen.dart';
+import 'package:provider/provider.dart';
+import 'state/tab_manager.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -11,50 +10,41 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _selectedIndex = 0;
-
-  static List<Widget> pages = <Widget>[
-    ExploreScreen(),
-    RecipesScreen(),
-    // TODO 1: Replace with grocery screen
-    Container(color: Colors.blue),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    // TODO 9: Wrap inside a Consumer Widget
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Fooderlich',
-          style: Theme.of(context).textTheme.headline6,
+    return Consumer<HomeTabsState>(
+      builder: (context, tabsState, child) => Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Fooderlich',
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
-      ),
-      body: pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Theme.of(context).textSelectionTheme.selectionColor,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        items: <BottomNavigationBarItem>[
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.explore),
-            label: 'Explore',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.book),
-            label: 'Recipes',
-          ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'To Buy',
-          ),
-        ],
+        body: IndexedStack(
+          index: tabsState.selectedIndex,
+          children: tabsState.allTabs,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          selectedItemColor:
+              Theme.of(context).textSelectionTheme.selectionColor,
+          currentIndex: tabsState.selectedIndex,
+          onTap: tabsState.goToIndex,
+          //(index) => homeTabs.goToTab(HomeTab.values[index]),
+          items: <BottomNavigationBarItem>[
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.explore),
+              label: 'Explore',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.book),
+              label: 'Recipes',
+            ),
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.list),
+              label: 'To Buy',
+            ),
+          ],
+        ),
       ),
     );
   }
