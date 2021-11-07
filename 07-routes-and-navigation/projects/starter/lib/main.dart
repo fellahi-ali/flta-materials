@@ -31,25 +31,16 @@ class _FooderlichState extends State<Fooderlich> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (context) => _groceryManager,
-        ),
-        ChangeNotifierProvider(
-          create: (context) => _profileManager,
-        ),
+        ChangeNotifierProvider(create: (context) => _groceryManager),
+        ChangeNotifierProvider(create: (context) => _profileManager),
         // TODO: Add AppStateManager ChangeNotifierProvider
       ],
       child: Consumer<ProfileManager>(
         builder: (context, profileManager, child) {
-          ThemeData theme;
-          if (profileManager.darkMode) {
-            theme = FooderlichTheme.dark();
-          } else {
-            theme = FooderlichTheme.light();
-          }
-
           return MaterialApp(
-            theme: theme,
+            theme: FooderlichTheme.light(),
+            darkTheme: FooderlichTheme.dark(),
+            themeMode: profileManager.themeMode,
             title: 'Fooderlich',
             // TODO: Replace with Router widget
             home: const SplashScreen(),

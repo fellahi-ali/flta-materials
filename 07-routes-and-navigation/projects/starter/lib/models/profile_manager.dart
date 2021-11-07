@@ -15,6 +15,7 @@ class ProfileManager extends ChangeNotifier {
   bool get didSelectUser => _didSelectUser;
   bool get didTapOnRaywenderlich => _tapOnRaywenderlich;
   bool get darkMode => _darkMode;
+  ThemeMode get themeMode => _darkMode ? ThemeMode.dark : ThemeMode.light;
 
   var _didSelectUser = false;
   var _tapOnRaywenderlich = false;
