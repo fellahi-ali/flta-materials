@@ -13,7 +13,7 @@ class GroceryScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () {
-          // TODO: Create New Item
+          Provider.of<GroceryManager>(context, listen: false).createNewItem();
         },
       ),
       body: buildGroceryScreen(),
@@ -23,11 +23,9 @@ class GroceryScreen extends StatelessWidget {
   Widget buildGroceryScreen() {
     return Consumer<GroceryManager>(
       builder: (context, manager, child) {
-        if (manager.groceryItems.isNotEmpty) {
-          return GroceryListScreen(manager: manager);
-        } else {
-          return const EmptyGroceryScreen();
-        }
+        return manager.groceryItems.isNotEmpty
+            ? GroceryListScreen(manager: manager)
+            : const EmptyGroceryScreen();
       },
     );
   }

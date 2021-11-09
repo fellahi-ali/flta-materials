@@ -5,7 +5,11 @@ import '../components/circle_image.dart';
 import '../models/models.dart';
 
 class ProfileScreen extends StatefulWidget {
-  // TODO: ProfileScreen MaterialPage Helper
+  static MaterialPage page(User user) => MaterialPage(
+        name: FooderlichPages.profilePath,
+        key: ValueKey(FooderlichPages.profilePath),
+        child: ProfileScreen(user: user),
+      );
 
   final User user;
   const ProfileScreen({
@@ -21,14 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            // TODO: Close Profile Screen
-          },
-        ),
-      ),
+      appBar: AppBar(),
       body: Center(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -50,14 +47,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         buildDarkModeRow(),
         ListTile(
           title: const Text('View raywenderlich.com'),
-          onTap: () {
-            // TODO: Open raywenderlich.com webview
-          },
+          onTap: () => Provider.of<ProfileManager>(context, listen: false)
+              .tapOnRaywenderlich(true),
         ),
         ListTile(
           title: const Text('Log out'),
           onTap: () {
-            // TODO: Logout user
+            Provider.of<AppStateManager>(context, listen: false).logout();
+            Provider.of<ProfileManager>(context, listen: false)
+                .tapOnProfile(false);
           },
         )
       ],

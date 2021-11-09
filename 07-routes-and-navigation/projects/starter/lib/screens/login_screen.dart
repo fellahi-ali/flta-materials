@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/models.dart';
 
 class LoginScreen extends StatelessWidget {
-  // TODO: LoginScreen MaterialPage Helper
+  static MaterialPage<LoginScreen> page() => MaterialPage(
+        name: FooderlichPages.loginPath,
+        key: ValueKey(FooderlichPages.loginPath),
+        child: const LoginScreen(),
+      );
 
   final String? username;
 
@@ -24,18 +30,14 @@ class LoginScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(
+              SizedBox(
                 height: 200,
-                child: Image(
-                  image: AssetImage(
-                    'assets/fooderlich_assets/rw_logo.png',
-                  ),
-                ),
+                child: Image.asset('assets/fooderlich_assets/rw_logo.png'),
               ),
               const SizedBox(height: 16),
-              buildTextfield(username ?? '🍔 username'),
+              buildTextfield(username ?? '👨‍🍳 username'),
               const SizedBox(height: 16),
-              buildTextfield('🎹 password'),
+              buildTextfield('🥣 password'),
               const SizedBox(height: 16),
               buildButton(context),
             ],
@@ -58,7 +60,10 @@ class LoginScreen extends StatelessWidget {
           style: TextStyle(color: Colors.white),
         ),
         onPressed: () async {
-          // TODO: Login -> Navigate to home
+          Provider.of<AppStateManager>(
+            context,
+            listen: false,
+          ).login('username', 'password');
         },
       ),
     );
