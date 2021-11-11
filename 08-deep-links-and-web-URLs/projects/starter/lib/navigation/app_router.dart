@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'app_link.dart';
 
 import '../models/models.dart';
 import '../screens/screens.dart';
 
-class AppRouter extends RouterDelegate //TODO: Add <AppLink>
-    with
-        ChangeNotifier,
-        PopNavigatorRouterDelegateMixin {
+class AppRouter extends RouterDelegate<AppRoute>
+    with ChangeNotifier, PopNavigatorRouterDelegateMixin {
   @override
   final GlobalKey<NavigatorState> navigatorKey;
 
@@ -94,11 +93,55 @@ class AppRouter extends RouterDelegate //TODO: Add <AppLink>
     return true;
   }
 
-  // TODO: Convert app state to applink
+  // convert App state to an AppLink
+  AppRoute getCurrentPath() {
+    if (!appStateManager.isLoggedIn) {
+      return AppRoute(location: AppRoute.loginPath);
+    }
+    if (!appStateManager.isOnboardingComplete) {
+      return AppRoute(location: AppRoute.onboardingPath);
+    }
+    if (profileManager.didSelectUser) {
+      return AppRoute(location: AppRoute.profilePath);
+    }
+    if (groceryManager.isCreatingNewItem) {
+      return AppRoute(location: AppRoute.itemPath);
+    }
+    final groceryItem = groceryManager.selectedGroceryItem;
+    if (groceryItem != null) {
+      return AppRoute(location: AppRoute.itemPath, itemId: groceryItem.id);
+    }
+    return AppRoute(
+      location: AppRoute.homePath,
+      currentTab: appStateManager.getSelectedTab,
+    );
+  }
 
-  // TODO: Apply configuration helper
-
-  // TODO: Replace setNewRoutePath
   @override
-  Future<void> setNewRoutePath(configuration) async => null;
+  AppRoute? get currentConfiguration => getCurrentPath();
+
+  @override
+  Future<void> setNewRoutePath(AppRoute appLink) async {
+    switch (appLink.location) {
+      case AppRoute.profilePath:
+        profileManager.tapOnProfile(true);
+        break;
+      case AppRoute.itemPath:
+        final id = appLink.itemId;
+        if (id == null)
+          groceryManager.createNewItem();
+        else
+          groceryManager.setSelectedGroceryItem(id);
+        profileManager.tapOnProfile(false);
+        break;
+      case AppRoute.homePath:
+        final tab = appLink.currentTab ?? 0;
+        appStateManager.goToTab(tab);
+        profileManager.tapOnProfile(false);
+        groceryManager.groceryItemTapped(-1);
+        break;
+      default:
+        break;
+    }
+  }
 }
