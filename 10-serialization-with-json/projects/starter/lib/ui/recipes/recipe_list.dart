@@ -1,9 +1,15 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'recipe_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../network/recipe_model.dart';
+import '../recipe_card.dart';
 import '../colors.dart';
 import '../widgets/custom_dropdown.dart';
+import '../../network/recipe_service.dart';
 
 class RecipeList extends StatefulWidget {
   const RecipeList({Key? key}) : super(key: key);
@@ -17,21 +23,19 @@ class _RecipeListState extends State<RecipeList> {
 
   late TextEditingController searchTextController;
   final ScrollController _scrollController = ScrollController();
-  List currentSearchList = [];
+  List<ApiHits> currentSearchResults = [];
   int currentCount = 0;
   int currentStartPosition = 0;
   int currentEndPosition = 20;
-  int pageCount = 20;
+  int pageCount = 50;
   bool hasMore = false;
   bool loading = false;
   bool inErrorState = false;
   List<String> previousSearches = <String>[];
-  // TODO: Add _currentRecipes1
 
   @override
   void initState() {
     super.initState();
-    // TODO: Call loadRecipes()
     getPreviousSearches();
     searchTextController = TextEditingController(text: '');
     _scrollController
@@ -40,10 +44,10 @@ class _RecipeListState extends State<RecipeList> {
             0.7 * _scrollController.position.maxScrollExtent;
 
         if (_scrollController.position.pixels > triggerFetchMoreSize) {
-          if (hasMore &&
-              currentEndPosition < currentCount &&
+          if (!inErrorState &&
               !loading &&
-              !inErrorState) {
+              hasMore &&
+              currentEndPosition < currentCount) {
             setState(() {
               loading = true;
               currentStartPosition = currentEndPosition;
@@ -55,10 +59,22 @@ class _RecipeListState extends State<RecipeList> {
       });
   }
 
-  // TODO: Add loadRecipes
+  Future<ApiRecipeResults> getRecipeData({
+    required String query,
+    int from = 0,
+    int to = 10,
+  }) async {
+    final json = await RecipeService().fetchRecipes(
+      query: query,
+      from: from,
+      to: to,
+    );
+    return ApiRecipeResults.fromJson(json);
+  }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     searchTextController.dispose();
     super.dispose();
   }
@@ -78,6 +94,21 @@ class _RecipeListState extends State<RecipeList> {
         previousSearches = <String>[];
       }
     }
+  }
+
+  void startSearch(String value) {
+    setState(() {
+      currentSearchResults.clear();
+      currentCount = 0;
+      currentStartPosition = 0;
+      currentEndPosition = pageCount;
+      hasMore = true;
+      value = value.trim();
+      if (!previousSearches.contains(value)) {
+        previousSearches.add(value);
+        savePreviousSearches();
+      }
+    });
   }
 
   @override
@@ -169,31 +200,94 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  void startSearch(String value) {
-    setState(() {
-      currentSearchList.clear();
-      currentCount = 0;
-      currentEndPosition = pageCount;
-      currentStartPosition = 0;
-      hasMore = true;
-      value = value.trim();
-      if (!previousSearches.contains(value)) {
-        previousSearches.add(value);
-        savePreviousSearches();
-      }
-    });
-  }
-
-  // TODO: Replace method
   Widget _buildRecipeLoader(BuildContext context) {
     if (searchTextController.text.length < 3) {
-      return Container();
+      return const Center(
+        child: Text(
+          'Type at least 3 letters 😎',
+          style: TextStyle(fontSize: 16),
+        ),
+      );
     }
-    // Show a loading indicator while waiting for the movies
-    return const Center(
-      child: CircularProgressIndicator(),
+    return FutureBuilder<ApiRecipeResults>(
+      future: getRecipeData(
+        query: searchTextController.text.trim(),
+        from: currentStartPosition,
+        to: currentEndPosition,
+      ),
+      builder: (_, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            inErrorState = true;
+            return _buildErrorReport(snapshot.error);
+          }
+          loading = false;
+          final results = snapshot.data;
+          inErrorState = false;
+          if (results != null) {
+            currentCount = results.count;
+            hasMore = results.more;
+            currentSearchResults = results.hits;
+            if (results.to < currentEndPosition) {
+              currentEndPosition = results.to;
+            }
+          }
+          return _buildRecipesList(context, currentSearchResults);
+        } else {
+          return const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: LinearProgressIndicator(),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildErrorReport(error) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red),
+          const SizedBox(height: 8),
+          Text(
+            error.toString(),
+            textAlign: TextAlign.center,
+            textScaleFactor: 1.2,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecipeCard(
+    BuildContext topLevelContext,
+    List<ApiHits> hits,
+    int index,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(topLevelContext).push(RecipeDetails.page);
+      },
+      child: recipeCard(hits[index].recipe),
+    );
+  }
+
+  Widget _buildRecipesList(context, List<ApiHits> hits) {
+    final size = MediaQuery.of(context).size;
+    const itemHeight = 310;
+    final itemWidth = size.width / 2;
+
+    return Flexible(
+      child: GridView.builder(
+        controller: _scrollController,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: itemWidth / itemHeight,
+        ),
+        itemCount: hits.length,
+        itemBuilder: (_, index) => _buildRecipeCard(context, hits, index),
+      ),
     );
   }
 }
-
-// TODO: Add _buildRecipeCard

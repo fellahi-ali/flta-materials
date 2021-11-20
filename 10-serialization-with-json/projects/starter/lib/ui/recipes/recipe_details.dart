@@ -6,6 +6,9 @@ import '../colors.dart';
 
 class RecipeDetails extends StatelessWidget {
   const RecipeDetails({Key? key}) : super(key: key);
+  static MaterialPageRoute get page => MaterialPageRoute(
+        builder: (_) => const RecipeDetails(),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -51,8 +54,7 @@ class RecipeDetails extends StatelessWidget {
                   child: Text(
                     // TODO 2
                     'Chicken Vesuvio',
-                    style: TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(
