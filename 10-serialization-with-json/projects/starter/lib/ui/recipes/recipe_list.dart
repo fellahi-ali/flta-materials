@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,8 @@ import '../recipe_card.dart';
 import '../colors.dart';
 import '../widgets/custom_dropdown.dart';
 import '../../network/recipe_service.dart';
+import 'package:chopper/chopper.dart';
+import '../../network/response_model.dart';
 
 class RecipeList extends StatefulWidget {
   const RecipeList({Key? key}) : super(key: key);
@@ -57,19 +58,6 @@ class _RecipeListState extends State<RecipeList> {
           }
         }
       });
-  }
-
-  Future<ApiRecipesResult> getRecipeData({
-    required String query,
-    int from = 0,
-    int to = 10,
-  }) async {
-    final json = await RecipeHttpService().fetchRecipes(
-      query: query,
-      from: from,
-      to: to,
-    );
-    return ApiRecipesResult.fromJson(json);
   }
 
   @override
@@ -209,28 +197,35 @@ class _RecipeListState extends State<RecipeList> {
         ),
       );
     }
-    return FutureBuilder<ApiRecipesResult>(
-      future: getRecipeData(
-        query: searchTextController.text.trim(),
-        from: currentStartPosition,
-        to: currentEndPosition,
+    return FutureBuilder<Response<Result<ApiRecipesResult>>>(
+      future: RecipeService.create().getRecipes(
+        searchTextController.text.trim(),
+        currentStartPosition,
+        currentEndPosition,
       ),
       builder: (_, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
+          loading = false;
           if (snapshot.hasError) {
             inErrorState = true;
             return _buildErrorReport(snapshot.error);
           }
-          loading = false;
-          final results = snapshot.data;
-          inErrorState = false;
-          if (results != null) {
-            currentCount = results.count;
-            hasMore = results.more;
-            currentSearchResults = results.hits;
-            if (results.to < currentEndPosition) {
-              currentEndPosition = results.to;
-            }
+          final response = snapshot.data!;
+          if (!response.isSuccessful) {
+            inErrorState = true;
+            return _buildErrorReport(response.error);
+          }
+          final result = response.body;
+          if (result is Faileur) {
+            inErrorState = true;
+            return _buildErrorReport((result as Faileur).exception);
+          }
+          final recipes = (result as Success<ApiRecipesResult>).value;
+          currentCount = recipes.count;
+          hasMore = recipes.more;
+          currentSearchResults = recipes.hits;
+          if (recipes.to < currentEndPosition) {
+            currentEndPosition = recipes.to;
           }
           return _buildRecipesList(context, currentSearchResults);
         } else {

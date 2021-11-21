@@ -26,9 +26,10 @@ class ApiRecipesConverter implements Converter {
   }
 
   @override
-  Response<BodyType> convertResponse<BodyType, InnerType>(Response response) {
-    return decodeJson(response);
-  }
+  Response<BodyType> convertResponse<BodyType, InnerType>(
+    Response response,
+  ) =>
+      decodeJson(response);
 
   Response<BodyType> decodeJson<BodyType, InnerType>(Response response) {
     final contentType = response.headers[contentTypeKey];
