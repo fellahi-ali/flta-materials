@@ -59,17 +59,17 @@ class _RecipeListState extends State<RecipeList> {
       });
   }
 
-  Future<ApiRecipeResults> getRecipeData({
+  Future<ApiRecipesResult> getRecipeData({
     required String query,
     int from = 0,
     int to = 10,
   }) async {
-    final json = await RecipeService().fetchRecipes(
+    final json = await RecipeHttpService().fetchRecipes(
       query: query,
       from: from,
       to: to,
     );
-    return ApiRecipeResults.fromJson(json);
+    return ApiRecipesResult.fromJson(json);
   }
 
   @override
@@ -209,7 +209,7 @@ class _RecipeListState extends State<RecipeList> {
         ),
       );
     }
-    return FutureBuilder<ApiRecipeResults>(
+    return FutureBuilder<ApiRecipesResult>(
       future: getRecipeData(
         query: searchTextController.text.trim(),
         from: currentStartPosition,

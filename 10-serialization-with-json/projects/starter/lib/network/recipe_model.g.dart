@@ -6,8 +6,8 @@ part of 'recipe_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-ApiRecipeResults _$ApiRecipeResultsFromJson(Map<String, dynamic> json) =>
-    ApiRecipeResults(
+ApiRecipesResult _$ApiRecipesResultFromJson(Map<String, dynamic> json) =>
+    ApiRecipesResult(
       query: json['q'] as String,
       from: json['from'] as int,
       to: json['to'] as int,
@@ -18,7 +18,7 @@ ApiRecipeResults _$ApiRecipeResultsFromJson(Map<String, dynamic> json) =>
           .toList(),
     );
 
-Map<String, dynamic> _$ApiRecipeResultsToJson(ApiRecipeResults instance) =>
+Map<String, dynamic> _$ApiRecipesResultToJson(ApiRecipesResult instance) =>
     <String, dynamic>{
       'q': instance.query,
       'from': instance.from,

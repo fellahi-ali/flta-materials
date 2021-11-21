@@ -4,7 +4,7 @@ part 'recipe_model.g.dart';
 //typedef Json = Map<String, dynamic>;
 // https://developer.edamam.com/edamam-docs-recipe-api-v1?cms=published&cms_token=
 @JsonSerializable()
-class ApiRecipeResults {
+class ApiRecipesResult {
   @JsonKey(name: 'q')
   String query;
   int from;
@@ -13,7 +13,7 @@ class ApiRecipeResults {
   int count;
   List<ApiHits> hits;
 
-  ApiRecipeResults({
+  ApiRecipesResult({
     required this.query,
     required this.from,
     required this.to,
@@ -22,8 +22,8 @@ class ApiRecipeResults {
     required this.hits,
   });
 
-  factory ApiRecipeResults.fromJson(json) => _$ApiRecipeResultsFromJson(json);
-  Map<String, dynamic> toJson() => _$ApiRecipeResultsToJson(this);
+  factory ApiRecipesResult.fromJson(json) => _$ApiRecipesResultFromJson(json);
+  Map<String, dynamic> toJson() => _$ApiRecipesResultToJson(this);
 }
 
 @JsonSerializable()
