@@ -7,7 +7,7 @@ import 'model_converter.dart';
 part 'recipe_service.chopper.dart';
 
 const _apiUrl = 'https://api.edamam.com';
-const _apiId = 'eec72b3c';
+const _apiId = 'eec72b3c***';
 final _apiKey = Platform.environment['EDAMAM_API_KEY'];
 
 @ChopperApi(baseUrl: _apiUrl)
@@ -24,7 +24,7 @@ abstract class RecipeService extends ChopperService {
       baseUrl: _apiUrl,
       interceptors: [_addApiKey, HttpLoggingInterceptor()],
       converter: ApiRecipesConverter(),
-      errorConverter: const JsonConverter(),
+      errorConverter: ApiErrorConverter(),
       services: [_$RecipeService()],
     );
     return _$RecipeService(client);

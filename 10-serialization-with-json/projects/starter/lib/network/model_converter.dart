@@ -56,3 +56,16 @@ class ApiRecipesConverter implements Converter {
     }
   }
 }
+
+class ApiErrorConverter extends ErrorConverter {
+  @override
+  FutureOr<Response> convertError<BodyType, InnerType>(
+    Response response,
+  ) {
+    final error = {
+      'code': response.statusCode,
+      'body': response.body,
+    };
+    return response.copyWith(body: error);
+  }
+}
