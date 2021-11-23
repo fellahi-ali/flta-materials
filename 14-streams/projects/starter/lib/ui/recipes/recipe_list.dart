@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipes/network/service_interface.dart';
 import '../widgets/custom_dropdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -195,52 +196,52 @@ class _RecipeListState extends State<RecipeList> {
       return Container();
     }
     return FutureBuilder<Response<Result<APIRecipeQuery>>>(
-      // TODO: replace with new interface
-      future: Provider.of<MockService>(context).queryRecipes(
+      future: Provider.of<ServiceInterface>(context).queryRecipes(
           searchTextController.text.trim(),
           currentStartPosition,
           currentEndPosition),
-      builder: (context, snapshot) {
+      builder: (_, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                textAlign: TextAlign.center,
-                textScaleFactor: 1.3,
-              ),
-            );
-          }
-
           loading = false;
-          final result = snapshot.data?.body;
-          // Hit an error
-          if (result is Error) {
+          if (snapshot.hasError) {
             inErrorState = true;
-            return _buildRecipeList(context, currentSearchList);
+            return _buildErrorReport(snapshot.error);
           }
-          final query = (result as Success).value;
+          final response = snapshot.data!;
+          if (!response.isSuccessful) {
+            inErrorState = true;
+            return _buildErrorReport(response.error);
+          }
           inErrorState = false;
-          if (query != null) {
-            currentCount = query.count;
-            hasMore = query.more;
-            currentSearchList.addAll(query.hits);
-            if (query.to < currentEndPosition) {
-              currentEndPosition = query.to;
-            }
+          final results = (response.body as Success<APIRecipeQuery>).value;
+          currentCount = results.count;
+          hasMore = results.more;
+          currentSearchList.addAll(results.hits);
+          if (results.to < currentEndPosition) {
+            currentEndPosition = results.to;
           }
           return _buildRecipeList(context, currentSearchList);
         } else {
           if (currentCount == 0) {
-            // Show a loading indicator while waiting for the movies
-            return const Center(
-              child: CircularProgressIndicator(),
+            return const Padding(
+              padding: EdgeInsets.all(8),
+              child: LinearProgressIndicator(),
             );
           } else {
             return _buildRecipeList(context, currentSearchList);
           }
         }
       },
+    );
+  }
+
+  Center _buildErrorReport(error) {
+    return Center(
+      child: Text(
+        error.toString(),
+        textAlign: TextAlign.center,
+        textScaleFactor: 1.2,
+      ),
     );
   }
 
