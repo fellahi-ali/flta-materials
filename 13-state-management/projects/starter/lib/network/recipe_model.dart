@@ -1,22 +1,23 @@
 import 'package:json_annotation/json_annotation.dart';
+import '../data/models/models.dart';
 
 part 'recipe_model.g.dart';
 
 @JsonSerializable()
-class APIRecipeQuery {
-  factory APIRecipeQuery.fromJson(Map<String, dynamic> json) =>
-      _$APIRecipeQueryFromJson(json);
+class ApiRecipeQuery {
+  factory ApiRecipeQuery.fromJson(Map<String, dynamic> json) =>
+      _$ApiRecipeQueryFromJson(json);
 
-  Map<String, dynamic> toJson() => _$APIRecipeQueryToJson(this);
+  Map<String, dynamic> toJson() => _$ApiRecipeQueryToJson(this);
   @JsonKey(name: 'q')
   String query;
   int from;
   int to;
   bool more;
   int count;
-  List<APIHits> hits;
+  List<ApiHits> hits;
 
-  APIRecipeQuery({
+  ApiRecipeQuery({
     required this.query,
     required this.from,
     required this.to,
@@ -27,30 +28,30 @@ class APIRecipeQuery {
 }
 
 @JsonSerializable()
-class APIHits {
-  APIRecipe recipe;
+class ApiHits {
+  ApiRecipe recipe;
 
-  APIHits({
+  ApiHits({
     required this.recipe,
   });
 
-  factory APIHits.fromJson(Map<String, dynamic> json) =>
-      _$APIHitsFromJson(json);
+  factory ApiHits.fromJson(Map<String, dynamic> json) =>
+      _$ApiHitsFromJson(json);
 
-  Map<String, dynamic> toJson() => _$APIHitsToJson(this);
+  Map<String, dynamic> toJson() => _$ApiHitsToJson(this);
 }
 
 @JsonSerializable()
-class APIRecipe {
+class ApiRecipe {
+  final id;
   String label;
   String image;
   String url;
-  List<APIIngredients> ingredients;
+  List<ApiIngredient> ingredients;
   double calories;
   double totalWeight;
   double totalTime;
-
-  APIRecipe({
+  ApiRecipe({
     required this.label,
     required this.image,
     required this.url,
@@ -58,12 +59,37 @@ class APIRecipe {
     required this.calories,
     required this.totalWeight,
     required this.totalTime,
-  });
+  }) : id = url.hashCode;
 
-  factory APIRecipe.fromJson(Map<String, dynamic> json) =>
-      _$APIRecipeFromJson(json);
+  Recipe toModel() => Recipe(
+        id: id,
+        label: label,
+        image: image,
+        url: url,
+        ingredients: _convertIngredients(ingredients, id),
+        calories: calories,
+        totalWeight: totalWeight,
+        totalTime: totalTime,
+      );
 
-  Map<String, dynamic> toJson() => _$APIRecipeToJson(this);
+  List<Ingredient> _convertIngredients(
+    List<ApiIngredient> apiIngredients,
+    int recipeId,
+  ) {
+    return apiIngredients
+        .map((ing) => Ingredient(
+              id: -1,
+              recipeId: recipeId,
+              name: ing.name,
+              weight: ing.weight,
+            ))
+        .toList();
+  }
+
+  factory ApiRecipe.fromJson(Map<String, dynamic> json) =>
+      _$ApiRecipeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ApiRecipeToJson(this);
 }
 
 String getCalories(double? calories) {
@@ -81,20 +107,18 @@ String getWeight(double? weight) {
 }
 
 @JsonSerializable()
-class APIIngredients {
+class ApiIngredient {
   @JsonKey(name: 'text')
   String name;
   double weight;
 
-  APIIngredients({
+  ApiIngredient({
     required this.name,
     required this.weight,
   });
 
-  factory APIIngredients.fromJson(Map<String, dynamic> json) =>
-      _$APIIngredientsFromJson(json);
+  factory ApiIngredient.fromJson(Map<String, dynamic> json) =>
+      _$ApiIngredientFromJson(json);
 
-  Map<String, dynamic> toJson() => _$APIIngredientsToJson(this);
+  Map<String, dynamic> toJson() => _$ApiIngredientToJson(this);
 }
-
-// TODO: Add convertIngredients() here

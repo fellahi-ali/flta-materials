@@ -1,4 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
+import 'package:recipes/data/memory_repo.dart';
 
 class ShoppingList extends StatefulWidget {
   const ShoppingList({Key? key}) : super(key: key);
@@ -9,28 +14,35 @@ class ShoppingList extends StatefulWidget {
 
 class _ShoppingListState extends State<ShoppingList> {
   final checkBoxValues = Map<int, bool>();
-  // TODO: Remove ingredients declaration
-  static const ingredients = <String>[];
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Add Consumer widget
-    return ListView.builder(
-        itemCount: ingredients.length,
-        itemBuilder: (BuildContext context, int index) {
-          return CheckboxListTile(
-            value: checkBoxValues.containsKey(index) && checkBoxValues[index]!,
-            // TODO: Update title to include name
-            title: Text(ingredients[index]),
-            onChanged: (newValue) {
-              if (newValue != null) {
-                setState(() {
-                  checkBoxValues[index] = newValue;
-                });
-              }
-            },
-          );
-        });
-    // TODO: Add closing brace and parenthesis
+    return Consumer<MemoryRepo>(
+      builder: (context, repo, child) {
+        final ingredients = repo.findAllIngredients();
+        return ListView.builder(
+            itemCount: ingredients.length,
+            itemBuilder: (_, int index) {
+              final checked = checkBoxValues[index] ?? false;
+              return CheckboxListTile(
+                value:
+                    checkBoxValues.containsKey(index) && checkBoxValues[index]!,
+                title: Text(
+                  ingredients[index].name,
+                  style: TextStyle(
+                    decoration: checked
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
+                ),
+                onChanged: (newValue) {
+                  if (newValue != null) {
+                    setState(() => checkBoxValues[index] = newValue);
+                  }
+                },
+              );
+            });
+      },
+    );
   }
 }

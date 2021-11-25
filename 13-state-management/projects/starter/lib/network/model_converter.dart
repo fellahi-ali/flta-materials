@@ -37,7 +37,7 @@ class ModelConverter implements Converter {
         return response.copyWith<BodyType>(
             body: Error(Exception(mapData['status'])) as BodyType);
       }
-      final recipeQuery = APIRecipeQuery.fromJson(mapData);
+      final recipeQuery = ApiRecipeQuery.fromJson(mapData);
       return response.copyWith<BodyType>(
           body: Success(recipeQuery) as BodyType);
     } catch (e) {

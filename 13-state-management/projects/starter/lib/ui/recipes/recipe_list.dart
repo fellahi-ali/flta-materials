@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../network/mock_service.dart';
 import '../widgets/custom_dropdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,9 +24,9 @@ class RecipeList extends StatefulWidget {
 class _RecipeListState extends State<RecipeList> {
   static const String prefSearchKey = 'previousSearches';
 
-  late TextEditingController searchTextController;
+  late TextEditingController _searchTextController;
   final ScrollController _scrollController = ScrollController();
-  List<APIHits> currentSearchList = [];
+  List<ApiHits> currentSearchList = [];
   int currentCount = 0;
   int currentStartPosition = 0;
   int currentEndPosition = 20;
@@ -33,18 +35,18 @@ class _RecipeListState extends State<RecipeList> {
   bool loading = false;
   bool inErrorState = false;
   List<String> previousSearches = <String>[];
+  late MockService _recipeService;
 
   @override
   void initState() {
     super.initState();
-    getPreviousSearches();
-
-    searchTextController = TextEditingController(text: '');
+    _recipeService = Provider.of<MockService>(context, listen: false);
+    _loadPreviousSearches();
+    _searchTextController = TextEditingController(text: '');
     _scrollController
       ..addListener(() {
         final triggerFetchMoreSize =
             0.7 * _scrollController.position.maxScrollExtent;
-
         if (_scrollController.position.pixels > triggerFetchMoreSize) {
           if (hasMore &&
               currentEndPosition < currentCount &&
@@ -63,7 +65,8 @@ class _RecipeListState extends State<RecipeList> {
 
   @override
   void dispose() {
-    searchTextController.dispose();
+    _scrollController.dispose();
+    _searchTextController.dispose();
     super.dispose();
   }
 
@@ -72,7 +75,7 @@ class _RecipeListState extends State<RecipeList> {
     prefs.setStringList(prefSearchKey, previousSearches);
   }
 
-  void getPreviousSearches() async {
+  void _loadPreviousSearches() async {
     final prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey(prefSearchKey)) {
       final searches = prefs.getStringList(prefSearchKey);
@@ -112,7 +115,7 @@ class _RecipeListState extends State<RecipeList> {
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () {
-                startSearch(searchTextController.text);
+                startSearch(_searchTextController.text);
                 final currentFocus = FocusScope.of(context);
                 if (!currentFocus.hasPrimaryFocus) {
                   currentFocus.unfocus();
@@ -137,7 +140,7 @@ class _RecipeListState extends State<RecipeList> {
                         savePreviousSearches();
                       }
                     },
-                    controller: searchTextController,
+                    controller: _searchTextController,
                   )),
                   PopupMenuButton<String>(
                     icon: const Icon(
@@ -145,8 +148,8 @@ class _RecipeListState extends State<RecipeList> {
                       color: lightGrey,
                     ),
                     onSelected: (String value) {
-                      searchTextController.text = value;
-                      startSearch(searchTextController.text);
+                      _searchTextController.text = value;
+                      startSearch(_searchTextController.text);
                     },
                     itemBuilder: (BuildContext context) {
                       return previousSearches
@@ -189,42 +192,40 @@ class _RecipeListState extends State<RecipeList> {
   }
 
   Widget _buildRecipeLoader(BuildContext context) {
-    if (searchTextController.text.length < 3) {
+    if (_searchTextController.text.length < 3) {
       return Container();
     }
-    return FutureBuilder<Response<Result<APIRecipeQuery>>>(
-      future: RecipeService.create().queryRecipes(
-          searchTextController.text.trim(),
-          currentStartPosition,
-          currentEndPosition),
+    return FutureBuilder<Response<Result<ApiRecipeQuery>>>(
+      future: _recipeService.queryRecipes(
+        _searchTextController.text.trim(),
+        currentStartPosition,
+        currentEndPosition,
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                textAlign: TextAlign.center,
-                textScaleFactor: 1.3,
-              ),
-            );
+            inErrorState = true;
+            return _buildErrorReport(snapshot.error);
           }
-
+          final response = snapshot.data!;
+          if (!response.isSuccessful) {
+            inErrorState = true;
+            return _buildErrorReport(response.error);
+          }
           loading = false;
-          final result = snapshot.data?.body;
+          final result = response.body;
           // Hit an error
           if (result is Error) {
             inErrorState = true;
-            return _buildRecipeList(context, currentSearchList);
+            return _buildErrorReport((result as Error).exception);
           }
-          final query = (result as Success).value;
+          final query = (result as Success<ApiRecipeQuery>).value;
           inErrorState = false;
-          if (query != null) {
-            currentCount = query.count;
-            hasMore = query.more;
-            currentSearchList.addAll(query.hits);
-            if (query.to < currentEndPosition) {
-              currentEndPosition = query.to;
-            }
+          currentCount = query.count;
+          hasMore = query.more;
+          currentSearchList.addAll(query.hits);
+          if (query.to < currentEndPosition) {
+            currentEndPosition = query.to;
           }
           return _buildRecipeList(context, currentSearchList);
         } else {
@@ -241,7 +242,17 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  Widget _buildRecipeList(BuildContext recipeListContext, List<APIHits> hits) {
+  Center _buildErrorReport(error) {
+    return Center(
+      child: Text(
+        error.toString(),
+        textAlign: TextAlign.center,
+        textScaleFactor: 1.3,
+      ),
+    );
+  }
+
+  Widget _buildRecipeList(BuildContext recipeListContext, List<ApiHits> hits) {
     final size = MediaQuery.of(context).size;
     const itemHeight = 310;
     final itemWidth = size.width / 2;
@@ -261,15 +272,18 @@ class _RecipeListState extends State<RecipeList> {
   }
 
   Widget _buildRecipeCard(
-      BuildContext topLevelContext, List<APIHits> hits, int index) {
+      BuildContext topLevelContext, List<ApiHits> hits, int index) {
     final recipe = hits[index].recipe;
     return GestureDetector(
       onTap: () {
-        Navigator.push(topLevelContext, MaterialPageRoute(
-          builder: (context) {
-            return const RecipeDetails();
-          },
-        ),);
+        Navigator.push(
+          topLevelContext,
+          MaterialPageRoute(
+            builder: (context) {
+              return RecipeDetails(recipe: recipe.toModel());
+            },
+          ),
+        );
       },
       child: recipeCard(recipe),
     );

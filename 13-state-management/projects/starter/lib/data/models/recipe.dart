@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../network/recipe_model.dart';
 import 'ingredient.dart';
 
 class Recipe extends Equatable {
@@ -22,6 +23,8 @@ class Recipe extends Equatable {
     required this.totalWeight,
     required this.totalTime,
   });
+
+  String get caloriesStr => getCalories(calories);
 
   @override
   List<Object?> get props => [

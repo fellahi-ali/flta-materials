@@ -2,7 +2,7 @@ import '../network/recipe_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-Widget recipeCard(APIRecipe recipe) {
+Widget recipeCard(ApiRecipe recipe) {
   return Card(
     elevation: 4.0,
     shape: RoundedRectangleBorder(
