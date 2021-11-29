@@ -2,9 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:provider/provider.dart';
-import 'package:recipes/data/memory_repo.dart';
-import 'package:recipes/data/models/recipe.dart';
-import 'package:recipes/data/repository.dart';
+import '../../data/models/recipe.dart';
+import '../../data/repository.dart';
 
 class MyRecipesList extends StatefulWidget {
   const MyRecipesList({Key? key}) : super(key: key);
@@ -14,8 +13,6 @@ class MyRecipesList extends StatefulWidget {
 }
 
 class _MyRecipesListState extends State<MyRecipesList> {
-  List<Recipe> recipes = [];
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -25,9 +22,18 @@ class _MyRecipesListState extends State<MyRecipesList> {
   }
 
   Widget _buildRecipeList(BuildContext context) {
-    return Consumer<MemoryRepo>(
-      builder: (context, repo, child) {
-        final recipes = repo.findAllRecipes();
+    final repo = Provider.of<Repository>(context, listen: false);
+    return StreamBuilder<List<Recipe>>(
+      stream: repo.watchRecipes(),
+      builder: (context, snapshot) {
+        print(snapshot.connectionState);
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+        final recipes = snapshot.data ?? [];
         return ListView.builder(
             itemCount: recipes.length,
             itemBuilder: (_, int index) {
@@ -66,14 +72,6 @@ class _MyRecipesListState extends State<MyRecipesList> {
                       iconWidget: const Icon(Icons.delete, color: Colors.red),
                       onTap: () => repo.deleteRecipe(recipe),
                     )
-                  ],
-                  secondaryActions: <Widget>[
-                    IconSlideAction(
-                        caption: 'Delete',
-                        color: Colors.transparent,
-                        foregroundColor: Colors.black,
-                        iconWidget: const Icon(Icons.delete, color: Colors.red),
-                        onTap: () => repo.deleteRecipe(recipe))
                   ],
                 ),
               );

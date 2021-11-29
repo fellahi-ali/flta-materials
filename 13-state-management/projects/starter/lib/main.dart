@@ -1,8 +1,12 @@
+// ignore_for_file: prefer_relative_imports
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
-import 'package:recipes/network/mock_service.dart';
+import 'package:recipes/data/repository.dart';
+import 'package:recipes/network/service_interface.dart';
+import 'network/mock_service.dart';
 import 'data/memory_repo.dart';
 
 import 'ui/main_screen.dart';
@@ -28,11 +32,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
+        Provider<Repository>(
           create: (_) => MemoryRepo(),
           lazy: false,
         ),
-        Provider(
+        Provider<ApiService>(
           create: (_) => MockService()..create(),
           lazy: false,
         ),

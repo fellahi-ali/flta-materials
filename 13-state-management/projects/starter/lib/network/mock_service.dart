@@ -3,10 +3,11 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:chopper/chopper.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'service_interface.dart';
 import 'model_response.dart';
 import 'recipe_model.dart';
 
-class MockService {
+class MockService implements ApiService {
   final _jsonRecipes = [];
   final _random = Random();
 
@@ -17,6 +18,7 @@ class MockService {
     _jsonRecipes.add(json.decode(recipe2));
   }
 
+  @override
   Future<Response<Result<ApiRecipeQuery>>> queryRecipes(
     String query,
     int from,

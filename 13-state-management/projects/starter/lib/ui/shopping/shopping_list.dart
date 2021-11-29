@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:recipes/data/memory_repo.dart';
+import '../../data/models/ingredient.dart';
+import '../../data/repository.dart';
 
 class ShoppingList extends StatefulWidget {
   const ShoppingList({Key? key}) : super(key: key);
@@ -17,9 +18,19 @@ class _ShoppingListState extends State<ShoppingList> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MemoryRepo>(
-      builder: (context, repo, child) {
-        final ingredients = repo.findAllIngredients();
+    final repo = Provider.of<Repository>(context, listen: false);
+    return StreamBuilder<List<Ingredient>>(
+      stream: repo.watchIngredietns(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
+        }
+        final ingredients = snapshot.data ?? [];
         return ListView.builder(
             itemCount: ingredients.length,
             itemBuilder: (_, int index) {

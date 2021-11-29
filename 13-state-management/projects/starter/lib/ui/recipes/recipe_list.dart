@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:recipes/network/service_interface.dart';
 import '../../network/mock_service.dart';
 import '../widgets/custom_dropdown.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,12 +36,12 @@ class _RecipeListState extends State<RecipeList> {
   bool loading = false;
   bool inErrorState = false;
   List<String> previousSearches = <String>[];
-  late MockService _recipeService;
+  late ApiService _recipeService;
 
   @override
   void initState() {
     super.initState();
-    _recipeService = Provider.of<MockService>(context, listen: false);
+    _recipeService = context.read<ApiService>();
     _loadPreviousSearches();
     _searchTextController = TextEditingController(text: '');
     _scrollController
@@ -193,7 +194,9 @@ class _RecipeListState extends State<RecipeList> {
 
   Widget _buildRecipeLoader(BuildContext context) {
     if (_searchTextController.text.length < 3) {
-      return Container();
+      return const Center(
+        child: Text('Enter at least 3 characters 😏'),
+      );
     }
     return FutureBuilder<Response<Result<ApiRecipeQuery>>>(
       future: _recipeService.queryRecipes(
