@@ -35,7 +35,7 @@ class RecipeDatabase extends _$RecipeDatabase {
   int get schemaVersion => 1;
 }
 
-@UseDao(tables: [MoorRecipe])
+@UseDao(tables: [MoorRecipe, MoorIngredient])
 class RecipeDao extends DatabaseAccessor<RecipeDatabase> with _$RecipeDaoMixin {
   final RecipeDatabase db;
 
@@ -44,18 +44,29 @@ class RecipeDao extends DatabaseAccessor<RecipeDatabase> with _$RecipeDaoMixin {
   Future<List<MoorRecipeData>> findAllRecipes() => select(moorRecipe).get();
 
   Stream<List<Recipe>> watchAllRecipe() {
-    // TODO
+    select(moorRecipe).get().then((value) {
+      value.map(print);
+    });
+    return select(moorRecipe)
+        .watch()
+        .map((data) => data.map(moorRecipeToRecipe).toList());
   }
 
   Future<List<MoorRecipeData>> findRecipeById(int id) =>
       (select(moorRecipe)..where((tbl) => tbl.id.equals(id))).get();
 
-  Future<int> insertRecipe(Insertable<MoorRecipeData> recipe) =>
-      into(moorRecipe).insert(recipe);
+  Future<int> insertRecipe(Recipe recipe) => transaction(() async {
+        final id = await into(moorRecipe).insert(recipeToInsertable(recipe));
+        recipe.ingredients
+            ?.map(ingredientToInsetable)
+            .forEach((i) => into(moorIngredient).insert(i));
+        return id;
+      });
 
-  Future deleteRecipe(int id) {
+  Future<bool> deleteRecipe(int id) async {
     final stmt = delete(moorRecipe)..where((tbl) => tbl.id.equals(id));
-    return stmt.go();
+    final row = await stmt.go();
+    return row > 0;
   }
 }
 
@@ -69,8 +80,9 @@ class IngredientDao extends DatabaseAccessor<RecipeDatabase>
   Future<List<MoorIngredientData>> findAllIngredients() =>
       select(moorIngredient).get();
 
-  Stream<List<MoorIngredientData>> watchAllIngredients() =>
-      select(moorIngredient).watch();
+  Stream<List<Ingredient>> watchAllIngredients() => select(moorIngredient)
+      .watch()
+      .map((data) => data.map(moorIngredientToModel).toList());
 
   Future<List<MoorIngredientData>> findRecipeIngredients(int id) =>
       (select(moorIngredient)..where((tbl) => tbl.recipeId.equals(id))).get();
@@ -82,6 +94,35 @@ class IngredientDao extends DatabaseAccessor<RecipeDatabase>
       (delete(moorIngredient)..where((tbl) => tbl.id.equals(id))).go());
 }
 
-// TODO: Add moorRecipeToRecipe here
+Recipe moorRecipeToRecipe(MoorRecipeData data) => Recipe(
+      id: data.id,
+      label: data.label,
+      image: data.image,
+      url: data.url,
+      calories: data.calories,
+      totalWeight: data.totalWeight,
+      totalTime: data.totalTime,
+    );
 
-// TODO: Add moorIngredientToIngredient and MoorIngredientCompanion here
+Insertable<MoorRecipeData> recipeToInsertable(Recipe recipe) =>
+    MoorRecipeCompanion.insert(
+      label: recipe.label,
+      image: recipe.image,
+      url: recipe.url,
+      calories: recipe.calories,
+      totalWeight: recipe.totalWeight,
+      totalTime: recipe.totalTime,
+    );
+
+Ingredient moorIngredientToModel(MoorIngredientData data) => Ingredient(
+      recipeId: data.recipeId,
+      name: data.name,
+      weight: data.weight,
+    );
+
+MoorIngredientCompanion ingredientToInsetable(Ingredient ingredient) =>
+    MoorIngredientCompanion.insert(
+      recipeId: ingredient.recipeId,
+      name: ingredient.name,
+      weight: ingredient.weight,
+    );

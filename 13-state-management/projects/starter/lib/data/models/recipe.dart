@@ -3,22 +3,22 @@ import '../../network/recipe_model.dart';
 import 'ingredient.dart';
 
 class Recipe extends Equatable {
-  final int id;
+  final int? id;
   final String label;
   final String image;
   final String url;
 
-  final List<Ingredient> ingredients;
+  List<Ingredient>? ingredients;
   final double calories;
   final double totalWeight;
   final double totalTime;
 
-  const Recipe({
-    required this.id,
+  Recipe({
+    this.id,
     required this.label,
     required this.image,
     required this.url,
-    required this.ingredients,
+    this.ingredients,
     required this.calories,
     required this.totalWeight,
     required this.totalTime,
@@ -36,4 +36,26 @@ class Recipe extends Equatable {
         totalWeight,
         totalTime,
       ];
+
+  factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
+        id: json['id'],
+        label: json['label'],
+        image: json['image'],
+        url: json['url'],
+        //ingredients: [],
+        calories: json['calories'],
+        totalWeight: json['total_weight'],
+        totalTime: json['total_time'],
+      );
+
+  Map<String, dynamic> toJson() => {
+        if (id != null) 'id': id,
+        'label': label,
+        'image': image,
+        'url': url,
+        //'ingredients': [],
+        'calories': calories,
+        'total_weight': totalWeight,
+        'total_time': totalTime,
+      };
 }

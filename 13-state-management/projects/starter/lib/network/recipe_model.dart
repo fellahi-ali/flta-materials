@@ -43,15 +43,16 @@ class ApiHits {
 
 @JsonSerializable()
 class ApiRecipe {
-  final id;
-  String label;
-  String image;
-  String url;
-  List<ApiIngredient> ingredients;
-  double calories;
-  double totalWeight;
-  double totalTime;
+  final int _id;
+  final String label;
+  final String image;
+  final String url;
+  final List<ApiIngredient> ingredients;
+  final double calories;
+  final double totalWeight;
+  final double totalTime;
   ApiRecipe({
+    int? id,
     required this.label,
     required this.image,
     required this.url,
@@ -59,14 +60,14 @@ class ApiRecipe {
     required this.calories,
     required this.totalWeight,
     required this.totalTime,
-  }) : id = url.hashCode;
+  }) : _id = id ?? url.hashCode;
 
   Recipe toModel() => Recipe(
-        id: id,
+        id: _id,
         label: label,
         image: image,
         url: url,
-        ingredients: _convertIngredients(ingredients, id),
+        ingredients: _convertIngredients(ingredients, _id),
         calories: calories,
         totalWeight: totalWeight,
         totalTime: totalTime,
@@ -78,7 +79,6 @@ class ApiRecipe {
   ) {
     return apiIngredients
         .map((ing) => Ingredient(
-              id: -1,
               recipeId: recipeId,
               name: ing.name,
               weight: ing.weight,

@@ -20,9 +20,12 @@ class MemoryRepo extends Repository {
   @override
   Future<int> insertRecipe(Recipe recipe) {
     _recipes.add(recipe);
-    _ingredients.addAll(recipe.ingredients);
     _recipesController.add(_recipes);
-    _ingredientsController.add(_ingredients);
+    final ingredients = recipe.ingredients;
+    if (ingredients != null) {
+      _ingredients.addAll(ingredients);
+      _ingredientsController.add(_ingredients);
+    }
     return Future.value(0);
   }
 
