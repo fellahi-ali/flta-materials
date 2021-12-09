@@ -288,3 +288,4 @@ DerivedData/
 ## Gcc Patch
 /*.gcno
 10-serialization-with-json/projects/starter/edamam_api.txt
+19-firebase-realtime-database/projects/starter/android/app/google-services.json
