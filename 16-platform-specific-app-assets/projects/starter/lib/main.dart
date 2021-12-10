@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:recipes/mock_service/mock_service.dart';
 
 import 'data/moor/moor_repository.dart';
 import 'data/repository.dart';
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
         ),
         Provider<ServiceInterface>(
           // create: (_) => MockService()..create(),
-          create: (_) => RecipeService.create(),
+          create: (_) => MockService()..create(),
           lazy: false,
         ),
       ],
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
         title: 'Recipes',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           primaryColor: Colors.white,
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
