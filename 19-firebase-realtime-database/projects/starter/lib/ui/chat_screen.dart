@@ -1,11 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:raychat/message.dart';
-import 'package:raychat/messages.dart';
-import 'package:raychat/ui/message_widget.dart';
-import 'package:raychat/users.dart';
+import '../message.dart';
+import '../messages.dart';
+import 'errors_report.dart';
+import 'message_widget.dart';
+import '../users.dart';
 
 class MessageList extends StatefulWidget {
   const MessageList({Key? key}) : super(key: key);
@@ -95,7 +95,7 @@ class MessageListState extends State<MessageList> {
       future: _sendStatus,
       builder: (_, snapshot) {
         if (snapshot.hasError) {
-          return Text('${snapshot.error}');
+          return ErrorReport(error: snapshot.error.toString());
         }
         return Container();
       },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'errors_report.dart';
 import '../users.dart';
 import 'package:provider/provider.dart';
 
@@ -63,13 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
             return const Center(child: LinearProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Text(
-              '${snapshot.error}',
-              style: const TextStyle(
-                color: Colors.red,
-                fontStyle: FontStyle.italic,
-              ),
-            );
+            return ErrorReport(error: snapshot.error.toString());
           }
           return Container();
         },

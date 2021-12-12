@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:raychat/ui/errors_report.dart';
 import 'ui/login_screen.dart';
 import 'users.dart';
 import 'messages.dart';
@@ -30,12 +31,7 @@ class App extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
             if (snapshot.hasError) {
-              return Center(
-                child: Text(
-                  '${snapshot.error}',
-                  style: const TextStyle(color: Colors.red),
-                ),
-              );
+              return ErrorReport(error: snapshot.error.toString());
             }
             // user is logged in
             if (snapshot.hasData) {
