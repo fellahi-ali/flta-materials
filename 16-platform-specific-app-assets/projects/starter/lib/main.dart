@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
+import 'package:recipes/data/sqlite/sqlite_repository.dart';
 import 'package:recipes/mock_service/mock_service.dart';
 
 import 'data/moor/moor_repository.dart';
@@ -13,8 +14,8 @@ import 'ui/main_screen.dart';
 Future<void> main() async {
   _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  // final repository = SqliteRepository();
-  final repository = MoorRepository();
+  final repository = SqliteRepository();
+  // final repository = MoorRepository();
   await repository.init();
   runApp(MyApp(repository: repository));
 }
@@ -44,7 +45,6 @@ class MyApp extends StatelessWidget {
           dispose: (_, Repository repository) => repository.close(),
         ),
         Provider<ServiceInterface>(
-          // create: (_) => MockService()..create(),
           create: (_) => MockService()..create(),
           lazy: false,
         ),
